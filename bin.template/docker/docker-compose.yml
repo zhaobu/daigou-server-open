@@ -1,0 +1,118 @@
+version: "3.8"
+
+# 申明同一个网络
+networks:
+  daigou_net:
+    name: daigou_net
+    # external: true # 申明网络已经在外部创建
+
+# 游戏数据卷
+volumes:
+  daigou_nginxdata:
+    name: daigou_nginxdata
+  # daigou_redisdata:
+  #   name: daigou_redisdata
+  # daigou_mysqldata:
+  #   name: daigou_mysqldata
+
+# 服务
+services:
+  # daigou_redis:
+  #   image: redis:6.0.2-alpine
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     daigou_net:
+  #       # 给网络取别名,可以用redis和cache找到
+  #       aliases:
+  #         - cache
+  #   command: /usr/local/etc/redis/redis.conf
+  #   volumes:
+  #     # 持久存储redis的数据
+  #     - daigou_redisdata:/data
+  #     # 挂载本地配置文件
+  #     - ./redis.conf:/usr/local/etc/redis/redis.conf
+  #     - /etc/localtime:/usr/local/etc/localtime
+
+  # daigou_mysql:
+  #   image: mysql:8.0.20
+  #   restart: always
+  #   ports:
+  #     - 3306:3306
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: daigou123
+  #     MYSQL_DATABASE: daigou
+  #     MYSQL_USER: daigou
+  #     MYSQL_PASSWORD: daigou
+  #   networks:
+  #     daigou_net:
+  #   command: --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
+  #   volumes:
+  #     - ./mysql/conf.d:/etc/mysql/conf.d:rw
+  #     - daigou_mysqldata:/var/lib/mysql
+  #     - ./mysql/logs:/var/log/mysql:rw
+  #     - /etc/localtime:/usr/local/etc/localtime
+
+  daigou_server:
+    image: golang:alpine
+    networks:
+      daigou_net:
+    # ports:
+    #   - 8199:8199
+    volumes:
+      - ../../:/usr/local/work:rw
+      - /etc/localtime:/etc/localtime
+    working_dir: /usr/local/work/bin
+    entrypoint: ["./start.sh"]
+    # 模拟一个伪终端
+    tty: true
+    # depends_on:
+    #   - daigou_redis
+    #   - daigou_mysql
+
+  daigou_nginx:
+    image: nginx:1.19.0-alpine
+    restart: always
+    volumes:
+      - ./nginx/cert/:/usr/local/nginx/cert
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/log/:/var/log/nginx/:rw
+      - daigou_nginxdata/:/var/cache/nginx
+      - /etc/localtime:/usr/local/etc/localtime
+      - daigou_nginxdata/:/run
+    networks:
+      - daigou_net
+    ports:
+      - 8000-8008:8000-8008
+      - 80:80
+      - 443:443
+    depends_on:
+      # - daigou_redis
+      # - daigou_mysql
+      - daigou_server
+
+  # daigou_swagger:
+  #   image: quay.io/goswagger/swagger
+  #   restart: always
+  #   # ports:
+  #   # - 3306:3306
+  #   environment:
+  #     GOPATH: /go
+  #   networks:
+  #     daigou_net:
+  #   # command: --privileged=true #容器内的root拥有真正root权限，否则容器内root只是外部普通用户权限
+  #   volumes:
+  #     - $GOPATH/src:/go/src
+  #     - daigou_mysqldata:/var/lib/mysql
+  #     - ./mysql/logs:/var/log/mysql:rw
+  #     - /etc/localtime:/usr/local/etc/localtime
+  #   working_dir: /go/src
+# golang编译环境
+# goenv:
+#   image: golang:latest
+#   tty: true
+#   working_dir: /go/src/lego_yl
+#   volumes:
+#     - ../../../lego_yl:/go/src/lego_yl

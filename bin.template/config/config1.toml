@@ -1,0 +1,141 @@
+[env]
+Debug = false #是否是Debug环境
+Logdir = "logs" #所有的日志根目录
+ServerID = 1 #服务id(用来标识服务id,Sonyflake算法生成唯一id时用到)
+
+# HTTP Server配置
+[server]
+Address = ":8199" #监听端口
+ServerRoot = "../public" #静态服务主目录
+NameToUriType = 3 #指定在注册路由时设置对象方法名称的路由生成方式
+# URI_TYPE_DEFAULT  = 0 // （默认）全部转为小写，单词以'-'连接符号连接
+# URI_TYPE_FULLNAME = 1 // 不处理名称，以原有名称构建成URI
+# URI_TYPE_ALLLOWER = 2 // 仅转为小写，单词间不使用连接符号
+# URI_TYPE_CAMEL    = 3 // 采用驼峰命名方式
+RouteOverWrite = true
+LogPath = "http" #httpserver日志目录
+LogStdout = false #http日志是否输出到终端
+AccessLogEnabled = true #access logging 是否写入到文件
+ErrorLogEnabled = true #error logging 是否写入到文件
+PProfEnabled = false #是否启用PProf特性
+SessionMaxAge = "2h" #session过期时间.
+DumpRouterMap = false #specifies whether automatically dumps router map when server starts
+SessionIdName = "Authorization" #客户端通过Header传递SessionId的名称
+SearchPaths = ["../", "./"]
+
+# 全局日志配置
+[logger]
+Logdir = "server"
+LogName = "server.log"
+Loglevel = "debug"
+Debug = true
+
+# 数据库连接
+[database]
+
+[database.default]
+Link = "daigou:daigou123@tcp(127.0.0.1:3306)/daigou_online?parseTime=True&loc=Local&charset=utf8mb4&collation=utf8mb4_bin"
+Debug = true
+Logdir = "db"
+Loglevel = "debug"
+LogName = "db.log"
+
+# Redis数据库配置
+[redis]
+cache = "127.0.0.1:6379,2,daigou123"
+
+# swagger api页面查看账号密码
+[swagger]
+user = "admin"
+pass = "123"
+schemes = ["http"]
+version = "1.0"
+title = "代购小程序api接口"
+
+# 微信小程序配置
+[weapp]
+appID = "wxce110d1bd97f0dda" #小程序 appID
+secret = "4f62c52120fd73393e77cf1568040537" #小程序的 app secret
+
+[weapp.payment]
+key = "Loverxjc587493Loverxjc587493Love" #支付key
+mchid = "1600500050" #商户号
+notifyurl = "https://cwyx.szxjcheng.com/daigou/api/v1/common/paymentCallback" #支付key
+
+# 微信订阅消息模板ID
+[weapp.subscribemessage]
+templatecomfirm = "NsMymI63yvRW8n5bAZokqAWwaKOeAtgX0GGKpDbWAaY" #确认订单通知
+templatedeliver = "4YxR25t88GxSntwtsr1BU_I4s1FantSIZ1o5OQFoGf8" #发货通知
+
+# 微信公众号推送消息模板
+[weapp.templatemessage]
+templatepurchase = "EBC0j8D5sFyqHI2h230phbKWQD28L-bz-kS0yQOFk7Y" #下单成功通知
+templateurl = "https://wwww.szxjcheng.com" #模板跳转链接
+
+# 微信公众号
+[weapp.gongzhonghao]
+appID = "wx63e3c5bfddf0ef86" 
+secret = "cc2733c17f1fe64c5c801a4eabfcd433"
+
+#阿里oss配置
+[alioss]
+accessKeyId = "LTAIssLCxHELxHAq" # 请填写您的AccessKeyId
+accessKeySecret = "645bzZ5iJxPru921GNrvkYNIm2Uhnf" # 请填写您的AccessKeySecret。
+expire_time = 3600 # 上传策略Policy的失效时间，单位为秒。
+
+#腾讯云配置
+[txcloud]
+appid = "1302455079"
+
+# 腾讯对象存储服务
+[txcloud.sts]
+bucket = "daigou"
+region = "ap-guangzhou"
+secretid = "AKIDXWCfsYsrRkrmUvoY2JLK9oDK6uWvo1lF"
+secretkey = "MRcNyLaZLnCNQCiwuY2f17wkIyNVS9Zn"
+
+[cron]
+Logdir = "cron"
+LogName = ""
+Loglevel = "ALL"
+
+# 验证码
+[smscode]
+width = 6 #验证码位数
+frequency = 60 #发送间隔,单位为秒
+validTime = 300 #验证码有效期,单位为秒
+signName = "诚物" #短信签名
+
+#casbin 访问控制
+[casbin]
+autosave = true
+modelconf = """
+# 访问请求, 也就是谁想操作什么 
+[request_definition] 
+r = sub, obj
+
+# 定义权限的规则
+[policy_definition]
+p = sub, obj
+
+# RBAC角色继承关系的定义
+[role_definition]
+g = _, _
+
+# 定义组合了多个 Policy 之后的结果, allow/deny
+[policy_effect]
+e = some(where (p.eft == allow))
+
+# 判断 Request 是否满足 Policy
+[matchers]
+m = g(r.sub, p.sub) && keyMatch2(r.obj, p.obj)
+"""
+
+# 配置游客账号(通过配置open_id,服务器启动后自动读取数据库寻找user_id)
+[test_user]
+
+[test_user.seller]
+open_id = "otZjk5JofTWYX8r1-wS_ucD91VDE"
+
+[test_user.buyer]
+open_id = "otZjk5MwbaFPaqIPH9yhwgQljoBA"

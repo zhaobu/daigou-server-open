@@ -1,0 +1,56 @@
+package {{.modelPackageName}}
+
+import (
+	"database/sql"
+	"time"
+
+	"github.com/guregu/null"
+	uuid "github.com/satori/go.uuid"
+)
+
+var (
+    _ = time.Second
+    _ = sql.LevelDefault
+    _ = null.Bool{}
+    _ = uuid.UUID{}
+)
+
+ {{if not .Config.AddProtobufAnnotation }}
+
+// {{.StructName}} struct is a row record of the {{.TableName}} table in the {{.DatabaseName}} database
+type {{.StructName}} struct {
+    {{range .TableInfo.Fields}}{{.}}
+    {{end}}
+}
+{{else}}
+
+// {{.StructName}} struct is a row record of the {{.TableName}} table in the {{.DatabaseName}} database
+/*
+type {{.StructName}} struct {
+    {{range .TableInfo.Fields}}{{.}}
+    {{end}}
+}
+*/
+
+{{end}}
+
+// TableName sets the insert table name for this struct type
+func ({{.ShortStructName}} *{{.StructName}}) TableName() string {
+	return "{{.TableName}}"
+}
+
+
+
+// BeforeSave invoked before saving, return an error if field is not populated.
+func ({{.ShortStructName}} *{{.StructName}}) BeforeSave() error {
+	return nil
+}
+
+// Prepare invoked before saving, can be used to populate fields etc.
+func ({{.ShortStructName}} *{{.StructName}}) Prepare() {
+}
+
+// Validate invoked before performing action, return an error if field is not populated.
+func ({{.ShortStructName}} *{{.StructName}}) Validate(action Action) error {
+    return nil
+}
